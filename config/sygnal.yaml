@@ -1,0 +1,49 @@
+log:
+  # Specify a Python logging 'dictConfig', as described at:
+  #   https://docs.python.org/3/library/logging.config.html#logging.config.dictConfig
+  #
+  setup:
+    version: 1
+    formatters:
+      normal:
+        format: "%(asctime)s [%(process)d] %(levelname)-5s %(name)s %(message)s"
+    handlers:
+      stderr:
+        class: "logging.StreamHandler"
+        formatter: "normal"
+        stream: "ext://sys.stderr"
+      stdout:
+        class: "logging.StreamHandler"
+        formatter: "normal"
+        stream: "ext://sys.stdout"
+
+      file:
+        class: "logging.handlers.WatchedFileHandler"
+        formatter: "normal"
+        filename: "./sygnal.log"
+    loggers:
+      sygnal.access:
+        propagate: false
+        handlers: ["stdout"]
+        level: "DEBUG"
+
+      sygnal:
+        propagate: false
+        handlers: ["stderr", "file"]
+
+    root:
+      handlers: ["stderr"]
+      level: "DEBUG"
+
+    disable_existing_loggers: false
+
+apps:
+  com.yourapppackage.name:
+    type: gcm
+    api_version: v1
+    project_id: YOUR_PROJECT_ID_ON_FIREBASE
+    service_account_file: /data/sygnal-fcm-service-account.json
+
+http:
+  bind_addresses: ['0.0.0.0']
+  port: 6000

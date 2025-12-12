@@ -1,0 +1,87 @@
+server_name: "matrix.example.com"
+public_baseurl: "https://matrix.example.com"
+pid_file: /data/homeserver.pid
+experimental_features:
+  msc3266_enabled: true
+  msc4222_enabled: true
+  msc4140_enabled: true
+
+push:
+  push_enabled: enable
+  push_gateway_url: "http://sygnal:6000"
+  use_fallback_push_gateway: false
+  fallback_push_gateway_url: ""
+
+url_preview_enabled: true
+
+url_preview_ip_range_blacklist:
+  - '127.0.0.0/8'
+  - '10.0.0.0/8'
+  - '172.16.0.0/12'
+  - '192.168.0.0/16'
+  - '::1/128'
+  - 'fe80::/10'
+
+outbound_push_restricted_ips:
+  allow:
+    - '127.0.0.1'
+    - '172.17.0.1'
+    - '10.0.0.0/8'
+    - '172.16.0.0/12'
+    - '192.168.0.0/16'
+
+max_event_delay_duration: 24h
+
+rc_message:
+  per_second: 0.5
+  burst_count: 30
+rc_delayed_event_mgmt:
+  per_second: 1
+  burst_count: 20
+
+encryption_enabled_by_default_for_room_type: all
+
+enable_registration: true
+registrations_require_3pid:
+  - email
+listeners:
+  - port: 8008
+    tls: false
+    type: http
+    x_forwarded: true
+    bind_addresses: ['::1', '0.0.0.0']
+    resources:
+      - names: [client, federation]
+        compress: false
+email:
+  smtp_host: SMTP_HOST
+  smtp_port: 587
+  smtp_user: "SMTP_USER_EMAIL"
+  smtp_pass: "SMTP_USER_EMAIL_PASSWORD"
+  require_transport_security: true
+  enable_tls: true
+  notif_from: "SMTP_USER_EMAIL <Welcome>"
+  enable_notifs: true
+  notif_for_new_users: true
+database:
+  name: psycopg2
+  args:
+    user: YOUR_POSTGRESDB_USER
+    password: YOUR_POSTGRESDB_USER_PASSWORD
+    host: db
+    port: 5432
+    database: synapse
+    cp_min: 5
+    cp_max: 10
+log_config: "/data/matrix.example.com.log.config"
+media_store_path: /data/media_store
+report_stats: false 
+registration_shared_secret: "SOME_RANDOMN_LONG_32BIT_STRING"
+macaroon_secret_key: "SOME_RANDOMN_LONG_32BIT_STRING"
+form_secret: "SOME_RANDOMN_LONG_32BIT_STRING"
+signing_key_path: "/data/matrix.example.com.signing.key"
+trusted_key_servers:
+  - server_name: ["matrix.example.com", "matrix.org"]
+
+
+# vim:ft=yaml

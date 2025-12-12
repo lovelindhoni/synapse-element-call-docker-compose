@@ -1,0 +1,47 @@
+matrix.example.com {
+        reverse_proxy /_matrix/* localhost:8008
+        reverse_proxy /_synapse/client/* localhost:8008
+        reverse_proxy * localhost:8008
+        handle /.well-known/matrix/client {
+                header Access-Control-Allow-Origin "*"
+                header Content-Type "application/json"
+                respond `{
+                "m.homeserver": {
+                "base_url": "https://matrix.example.com"}
+                ,
+                "org.matrix.msc4143.rtc_foci": [ {
+
+                "type": "livekit",
+                "livekit_service_url": "https://call.example.com"}
+
+                ]}
+                `
+        }
+        handle /.well-known/matrix/server {
+                header Content-Type "application/json"
+                header Access-Control-Allow-Origin "*"
+                respond `{"m.server": "matrix.example.com:443"}`
+        }
+}
+
+call.example.com {
+        @preflight_sfu {
+                method OPTIONS
+                path /sfu/get*
+        }
+        handle @preflight_sfu {
+                header Access-Control-Allow-Origin "*"
+                header Access-Control-Allow-Methods "GET, POST, OPTIONS"
+                header Access-Control-Allow-Headers "*"
+                respond "" 204
+        }
+
+        @sfu_get path /sfu/get*
+        handle @sfu_get {
+                reverse_proxy 127.0.0.1:8080
+        }
+
+        handle_path /livekit/sfu* {
+                reverse_proxy 127.0.0.1:7880
+        }
+}

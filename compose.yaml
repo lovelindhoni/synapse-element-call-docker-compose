@@ -1,0 +1,64 @@
+services:
+  synapse:
+    image: docker.io/matrixdotorg/synapse:latest
+    container_name: synapse
+    restart: unless-stopped
+    environment:
+      - SYNAPSE_CONFIG_PATH=/data/homeserver.yaml
+    volumes:
+      - ./files:/data
+    depends_on:
+      - db
+      - sygnal
+    ports:
+      # - "8448:8448"
+      - "8008:8008"
+
+  db:
+    image: docker.io/postgres:15-alpine
+    container_name: synapse_db
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=YOUR_POSTGRESDB_USER
+      - POSTGRES_PASSWORD=YOUR_POSTGRESDB_USER_PASSWORD
+      - POSTGRES_INITDB_ARGS=--encoding=UTF-8 --lc-collate=C --lc-ctype=C
+    volumes:
+      - ./schemas:/var/lib/postgresql/data
+
+  sygnal:
+    image: docker.io/matrixdotorg/sygnal:latest
+    container_name: sygnal
+    restart: unless-stopped
+    ports:
+      - "6000:6000"
+    volumes:
+      - ./config/sygnal.yaml:/sygnal.yaml:ro
+      - ./config/sygnal-fcm-service-account.json:/data/sygnal-fcm-service-account.json:ro
+    environment:
+      - SYGNAL_CONF=/sygnal.yaml
+
+  livekit-auth-service:
+    image: ghcr.io/element-hq/lk-jwt-service:latest
+    container_name: element-call-jwt
+    hostname: auth-server
+    environment:
+      - LIVEKIT_JWT_PORT=8080
+      - LIVEKIT_URL=https://matrix.example.com/livekit/sfu
+      - LIVEKIT_KEY=devkey
+      - LIVEKIT_SECRET=THE_SAME_RANDOMN_LONG_32BIT_STRING_USED_IN_LIVEKIT_YAML
+      - LIVEKIT_FULL_ACCESS_HOMESERVERS=matrix.example.com
+    restart: unless-stopped
+    ports:
+      - 8080:8080
+
+  livekit:
+    image: livekit/livekit-server:latest
+    container_name: element-call-livekit
+    command: --config /etc/livekit.yaml
+    ports:
+      - 7880:7880/tcp
+      - 7881:7881/tcp
+      - 50100-50200:50100-50200/udp
+    restart: unless-stopped
+    volumes:
+      - ./config/livekit.yaml:/etc/livekit.yaml:ro
