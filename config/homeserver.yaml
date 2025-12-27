@@ -15,20 +15,20 @@ push:
 url_preview_enabled: true
 
 url_preview_ip_range_blacklist:
-  - '127.0.0.0/8'
-  - '10.0.0.0/8'
-  - '172.16.0.0/12'
-  - '192.168.0.0/16'
-  - '::1/128'
-  - 'fe80::/10'
+  - "127.0.0.0/8"
+  - "10.0.0.0/8"
+  - "172.16.0.0/12"
+  - "192.168.0.0/16"
+  - "::1/128"
+  - "fe80::/10"
 
 outbound_push_restricted_ips:
   allow:
-    - '127.0.0.1'
-    - '172.17.0.1'
-    - '10.0.0.0/8'
-    - '172.16.0.0/12'
-    - '192.168.0.0/16'
+    - "127.0.0.1"
+    - "172.17.0.1"
+    - "10.0.0.0/8"
+    - "172.16.0.0/12"
+    - "192.168.0.0/16"
 
 max_event_delay_duration: 24h
 
@@ -49,7 +49,7 @@ listeners:
     tls: false
     type: http
     x_forwarded: true
-    bind_addresses: ['::1', '0.0.0.0']
+    bind_addresses: ["::1", "0.0.0.0"]
     resources:
       - names: [client, federation]
         compress: false
@@ -70,18 +70,16 @@ database:
     password: YOUR_POSTGRESDB_USER_PASSWORD
     host: db
     port: 5432
-    database: synapse
+    database: synapse_db
     cp_min: 5
     cp_max: 10
 log_config: "/data/matrix.example.com.log.config"
 media_store_path: /data/media_store
-report_stats: false 
+report_stats: false
 registration_shared_secret: "SOME_RANDOMN_LONG_32BIT_STRING"
 macaroon_secret_key: "SOME_RANDOMN_LONG_32BIT_STRING"
 form_secret: "SOME_RANDOMN_LONG_32BIT_STRING"
 signing_key_path: "/data/matrix.example.com.signing.key"
 trusted_key_servers:
   - server_name: ["matrix.example.com", "matrix.org"]
-
-
 # vim:ft=yaml
