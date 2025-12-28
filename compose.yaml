@@ -44,7 +44,7 @@ services:
     hostname: auth-server
     environment:
       - LIVEKIT_JWT_PORT=8080
-      - LIVEKIT_URL=https://matrix.example.com/livekit/sfu
+      - LIVEKIT_URL=https://call.example.com/livekit/sfu
       - LIVEKIT_KEY=devkey
       - LIVEKIT_SECRET=THE_SAME_RANDOMN_LONG_32BIT_STRING_USED_IN_LIVEKIT_YAML
       - LIVEKIT_FULL_ACCESS_HOMESERVERS=matrix.example.com
