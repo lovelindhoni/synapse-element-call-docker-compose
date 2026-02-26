@@ -8,15 +8,11 @@ services:
     volumes:
       - ./files:/data
     depends_on:
-      - db
-      - sygnal
-    ports:
-      # - "8448:8448"
-      - "8008:8008"
+      - synapse-db
 
-  db:
-    image: docker.io/postgres:15-alpine
-    container_name: synapse_db
+  synapse-db:
+    image: docker.io/postgres:17-alpine
+    container_name: synapse-db
     restart: unless-stopped
     environment:
       - POSTGRES_DB=synapse_db
@@ -24,42 +20,42 @@ services:
       - POSTGRES_PASSWORD=YOUR_POSTGRESDB_USER_PASSWORD
       - POSTGRES_INITDB_ARGS=--encoding=UTF-8 --lc-collate=C --lc-ctype=C
     volumes:
-      - ./schemas:/var/lib/postgresql/data
+      - ./synapse-schemas:/var/lib/postgresql/data
 
-  sygnal:
-    image: docker.io/matrixdotorg/sygnal:latest
-    container_name: sygnal
+  app-db:
+    image: docker.io/postgres:17-alpine
+    container_name: app-db
     restart: unless-stopped
-    ports:
-      - "6000:6000"
+    environment:
+      - POSTGRES_DB=app_db
+      - POSTGRES_USER=YOUR_POSTGRESDB_USER
+      - POSTGRES_PASSWORD=YOUR_POSTGRESDB_USER_PASSWORD
+      - POSTGRES_INITDB_ARGS=--encoding=UTF-8 --lc-collate=C --lc-ctype=C
     volumes:
-      - ./config/sygnal.yaml:/sygnal.yaml:ro
-      - ./config/sygnal-fcm-service-account.json:/data/sygnal-fcm-service-account.json:ro
-    environment:
-      - SYGNAL_CONF=/sygnal.yaml
+      - ./app-schemas:/var/lib/postgresql/data
 
-  livekit-auth-service:
-    image: ghcr.io/element-hq/lk-jwt-service:latest
-    container_name: element-call-jwt
-    hostname: auth-server
-    environment:
-      - LIVEKIT_JWT_PORT=8080
-      - LIVEKIT_URL=https://call.example.com/livekit/sfu
-      - LIVEKIT_KEY=devkey
-      - LIVEKIT_SECRET=THE_SAME_RANDOMN_LONG_32BIT_STRING_USED_IN_LIVEKIT_YAML
-      - LIVEKIT_FULL_ACCESS_HOMESERVERS=matrix.example.com
+  app-db-bouncer:
+    image: edoburu/pgbouncer:latest
+    container_name: app_db_bouncer
     restart: unless-stopped
+    environment:
+      - DATABASE_URL=postgres://YOUR_POSTGRESDB_USER:YOUR_POSTGRESDB_USER_PASSWORD@app-db:5432/app_db
+      - MAX_CLIENT_CONN=100
+      - DEFAULT_POOL_SIZE=20
+      - AUTH_TYPE=scram-sha-256
+      - POOL_MODE=transaction
     ports:
-      - 8080:8080
+      - "6432:5432"
+    depends_on:
+      - app-db
 
-  livekit:
-    image: docker.io/livekit/livekit-server:latest
-    container_name: element-call-livekit
-    command: --config /etc/livekit.yaml
-    ports:
-      - 7880:7880/tcp
-      - 7881:7881/tcp
-      - 50100-50200:50100-50200/udp
+  caddy:
+    image: docker.io/caddy:latest
+    container_name: caddy
     restart: unless-stopped
     volumes:
-      - ./config/livekit.yaml:/etc/livekit.yaml:ro
+      - ./config/Caddyfile:/etc/caddy/Caddyfile
+    depends_on:
+      - synapse
+    ports:
+      - "8080:8080"
